@@ -16,10 +16,10 @@ Pull the image and run the interactive login helper. It will prompt for your Obs
 
 ```bash
 # Docker
-docker run --rm -it --entrypoint get-token ghcr.io/belphemur/obsidian-headless-sync-docker:latest
+docker run --rm -it --entrypoint get-token ghcr.io/pauvt/obsidian-headless-sync-docker:latest
 
 # Podman
-podman run --rm -it --entrypoint get-token ghcr.io/belphemur/obsidian-headless-sync-docker:latest
+podman run --rm -it --entrypoint get-token ghcr.io/pauvt/obsidian-headless-sync-docker:latest
 ```
 
 Copy the printed `OBSIDIAN_AUTH_TOKEN` value — you'll need it in step 3.
@@ -37,14 +37,14 @@ List the vaults available on your Obsidian Sync account:
 docker run --rm \
   -e OBSIDIAN_AUTH_TOKEN=your-token-here \
   --entrypoint ob \
-  ghcr.io/belphemur/obsidian-headless-sync-docker:latest \
+  ghcr.io/pauvt/obsidian-headless-sync-docker:latest \
   sync-list-remote
 
 # Podman
 podman run --rm \
   -e OBSIDIAN_AUTH_TOKEN=your-token-here \
   --entrypoint ob \
-  ghcr.io/belphemur/obsidian-headless-sync-docker:latest \
+  ghcr.io/pauvt/obsidian-headless-sync-docker:latest \
   sync-list-remote
 ```
 
@@ -223,7 +223,7 @@ Images are published to the GitHub Container Registry on every push to `main` an
 
 ```yaml
 # compose.yml already points to:
-image: ghcr.io/belphemur/obsidian-headless-sync-docker:latest
+image: ghcr.io/pauvt/obsidian-headless-sync-docker:latest
 ```
 
 ### Build locally

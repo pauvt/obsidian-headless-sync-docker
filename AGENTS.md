@@ -4,7 +4,7 @@
 
 **obsidian-headless-sync-docker** is a rootless Docker image that continuously syncs an [Obsidian](https://obsidian.md) vault using [obsidian-headless](https://github.com/obsidianmd/obsidian-headless), the official headless CLI for Obsidian Sync.
 
-- **Repository:** <https://github.com/Belphemur/obsidian-headless-sync-docker>
+- **Repository:** <https://github.com/pauvt/obsidian-headless-sync-docker>
 - **Base image:** `node:lts-alpine`
 - **Init system:** [s6-overlay v3](https://github.com/just-containers/s6-overlay)
 - **Supported platforms:** `linux/amd64`, `linux/arm64`
@@ -86,7 +86,7 @@ There are no automated tests. Validation is done by building the image and runni
 - **`type` files** end with a newline.
 - **`up` files** contain a single command path referencing a script in `/etc/s6-overlay/scripts/`.
 - **Dependency files** are empty files whose *name* is the dependency.
-- **Image references** point to `ghcr.io/belphemur/obsidian-headless-sync-docker`.
+- **Image references** point to `ghcr.io/pauvt/obsidian-headless-sync-docker`.
 
 ## Environment Variables
 

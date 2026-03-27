@@ -1,7 +1,6 @@
 services:
   obsidian-sync:
-    build: .
-    image: obsidian-headless-sync-docker:latest
+    image: ghcr.io/pauvt/obsidian-headless-sync-docker:latest
     container_name: obsidian-sync
     environment:
       # Required

@@ -7,12 +7,12 @@
 
 [Unit]
 Description=Obsidian Headless Sync
-Documentation=https://github.com/Belphemur/obsidian-headless-sync-docker
+Documentation=https://github.com/pauvt/obsidian-headless-sync-docker
 After=network-online.target
 Wants=network-online.target
 
 [Container]
-Image=ghcr.io/belphemur/obsidian-headless-sync-docker:latest
+Image=ghcr.io/pauvt/obsidian-headless-sync-docker:latest
 ContainerName=obsidian-sync
 Pull=newer
 AutoUpdate=registry
