@@ -4,6 +4,9 @@
 set -e
 
 VAULT_PATH="${VAULT_PATH:-/vault}"
+UMASK="${UMASK:-0077}"
+
+umask "$UMASK"
 mkdir -p "$VAULT_PATH"
 if ! cd "$VAULT_PATH"; then
   echo "[obsidian-sync] ERROR: Failed to change directory to VAULT_PATH='$VAULT_PATH'." >&2

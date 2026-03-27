@@ -15,11 +15,7 @@ Built on [s6-overlay](https://github.com/just-containers/s6-overlay) for proper 
 Pull the image and run the interactive login helper. It will prompt for your Obsidian email, password, and MFA code (if enabled), then print your token.
 
 ```bash
-# Docker
-docker run --rm -it --entrypoint get-token ghcr.io/pauvt/obsidian-headless-sync-docker:latest
-
-# Podman
-podman run --rm -it --entrypoint get-token ghcr.io/pauvt/obsidian-headless-sync-docker:latest
+sudo docker run --rm -it --entrypoint get-token ghcr.io/pauvt/obsidian-headless-sync-docker:latest
 ```
 
 Copy the printed `OBSIDIAN_AUTH_TOKEN` value — you'll need it in step 3.
@@ -33,15 +29,7 @@ Copy the printed `OBSIDIAN_AUTH_TOKEN` value — you'll need it in step 3.
 List the vaults available on your Obsidian Sync account:
 
 ```bash
-# Docker
-docker run --rm \
-  -e OBSIDIAN_AUTH_TOKEN=your-token-here \
-  --entrypoint ob \
-  ghcr.io/pauvt/obsidian-headless-sync-docker:latest \
-  sync-list-remote
-
-# Podman
-podman run --rm \
+sudo docker run --rm \
   -e OBSIDIAN_AUTH_TOKEN=your-token-here \
   --entrypoint ob \
   ghcr.io/pauvt/obsidian-headless-sync-docker:latest \
@@ -58,6 +46,7 @@ Note the exact vault name — you'll use it in `VAULT_NAME`.
 
 ```bash
 cp .env.example .env
+chmod 600 .env
 ```
 
 Edit `.env` and fill in at minimum:
@@ -76,7 +65,7 @@ See [Environment Variables](#environment-variables) for all options.
 ### Step 4 — Start continuous sync
 
 ```bash
-docker compose up -d
+sudo docker compose up -d
 ```
 
 On first run the container performs a one-time `ob sync-setup` to link the local directory to your remote vault, then enters continuous sync mode. Subsequent restarts skip the setup and go straight to syncing.
@@ -84,7 +73,7 @@ On first run the container performs a one-time `ob sync-setup` to link the local
 Watch logs:
 
 ```bash
-docker compose logs -f
+sudo docker compose logs -f
 ```
 
 ---
@@ -125,6 +114,7 @@ Supported platforms: `linux/amd64`, `linux/arm64`.
 | `FILE_TYPES` | No | — | Extra types to sync: `image,audio,video,pdf,unsupported` |
 | `SYNC_MODE` | No | `bidirectional` | Sync mode: `bidirectional`, `pull-only`, or `mirror-remote` |
 | `SYNC_CONFIGS` | No | — | Comma-separated config categories to sync (see below) |
+| `UMASK` | No | `0027` | File permission mask for synced vault files (see below) |
 | `GHCR_REPO` | No | — | Override image repository when self-building |
 
 ---
@@ -146,13 +136,20 @@ PUID=1000
 PGID=1000
 ```
 
-**Rootless Docker / Podman** (daemon runs as your user):
+---
 
-In rootless mode, container UID 0 already maps to your host user. Set both to `0`:
+## File Permissions (UMASK)
+
+By default the container applies a umask of `0077`, which means synced vault files are only accessible to their owner — no group or other access.
+
+| Value | Files | Dirs | Use case |
+|---|---|---|---|
+| `0077` | `rw-------` | `rwx------` | Default — owner only (recommended for NAS) |
+| `0027` | `rw-r-----` | `rwxr-x---` | Owner + group read |
+| `0022` | `rw-r--r--` | `rwxr-xr-x` | Everyone reads |
 
 ```env
-PUID=0
-PGID=0
+UMASK=0077
 ```
 
 ---
@@ -229,87 +226,18 @@ image: ghcr.io/pauvt/obsidian-headless-sync-docker:latest
 ### Build locally
 
 ```bash
-docker build -t obsidian-headless-sync-docker .
+sudo docker build -t obsidian-headless-sync-docker .
 ```
 
 Then update `compose.yml` to use `image: obsidian-headless-sync-docker`.
 
 ---
 
-## Podman Quadlet (systemd)
-
-A ready-made quadlet unit file (`obsidian-sync.container`) is included for running the container as a systemd service under rootless Podman.
-
-### Install
-
-```bash
-# Copy the quadlet into the user systemd search path
-mkdir -p ~/.config/containers/systemd
-cp obsidian-sync.container ~/.config/containers/systemd/
-
-# Create a secrets file (mode 600 keeps your token private)
-mkdir -p ~/.config/obsidian-sync
-install -m 600 /dev/null ~/.config/obsidian-sync/obsidian-sync.env
-```
-
-Populate `~/.config/obsidian-sync/obsidian-sync.env` with at minimum:
-
-```env
-OBSIDIAN_AUTH_TOKEN=<token from get-token>
-VAULT_NAME=My Vault
-```
-
-Optional keys (defaults are set in the unit file):
-
-```env
-VAULT_PASSWORD=
-DEVICE_NAME=obsidian-podman
-CONFLICT_STRATEGY=merge
-EXCLUDED_FOLDERS=
-FILE_TYPES=
-SYNC_MODE=
-SYNC_CONFIGS=
-```
-
-### Start
-
-```bash
-systemctl --user daemon-reload
-systemctl --user start obsidian-sync
-systemctl --user status obsidian-sync
-```
-
-Watch logs:
-
-```bash
-journalctl --user -u obsidian-sync -f
-```
-
-### Automatic image updates
-
-Enable the built-in Podman auto-update timer to pull new images from ghcr on a schedule:
-
-```bash
-systemctl --user enable --now podman-auto-update.timer
-```
-
-The unit also sets `Pull=newer`, so it will fetch a newer image from ghcr.io each time the service restarts.
-
-### Vault location
-
-By default the vault is stored at `~/obsidian-vault`. To use a different path, edit the `Volume=` line in the unit file before copying it:
-
-```ini
-Volume=/path/to/your/vault:/vault:z
-```
-
----
-
 ## Updating the Image
 
 ```bash
-docker compose pull
-docker compose up -d
+sudo docker compose pull
+sudo docker compose up -d
 ```
 
 ---
@@ -317,7 +245,7 @@ docker compose up -d
 ## Stopping
 
 ```bash
-docker compose down
+sudo docker compose down
 ```
 
 Your vault files remain on disk at `VAULT_HOST_PATH`.
@@ -327,7 +255,7 @@ Your vault files remain on disk at `VAULT_HOST_PATH`.
 ## Troubleshooting
 
 **Container exits immediately**
-- Check that `OBSIDIAN_AUTH_TOKEN` and `VAULT_NAME` are set: `docker compose config`
+- Check that `OBSIDIAN_AUTH_TOKEN` and `VAULT_NAME` are set: `sudo docker compose config`
 - Check init logs: the container stops on any init failure (`S6_BEHAVIOUR_IF_STAGE2_FAILS=2`)
 
 **"Vault not found" error on setup**
@@ -340,11 +268,10 @@ Your vault files remain on disk at `VAULT_HOST_PATH`.
 - The `restart: unless-stopped` policy in `compose.yml` will restart the container automatically. Within the container, s6 supervises the sync process and restarts it if it exits.
 
 **Token expired / login required**
-- Re-run the `get-token` step, update `OBSIDIAN_AUTH_TOKEN` in `.env`, and restart: `docker compose up -d`
+- Re-run the `get-token` step, update `OBSIDIAN_AUTH_TOKEN` in `.env`, and restart: `sudo docker compose up -d`
 
 **Permission denied on vault files**
 - The container adjusts its internal user to match `PUID`/`PGID` (default `1000:1000`). Set these in `.env` to match the host user who should own the files (`id` shows your values).
-- For rootless Docker/Podman, set both to `0`.
 
 ---
 
