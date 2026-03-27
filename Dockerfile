@@ -24,7 +24,8 @@ RUN apk add --no-cache --virtual .s6-deps xz \
 # ---------------------------------------------------------------------------
 # Install obsidian-headless CLI (requires Node 22+)
 # ---------------------------------------------------------------------------
-RUN npm install -g obsidian-headless
+ARG OBSIDIAN_HEADLESS_VERSION=0.0.8
+RUN npm install -g obsidian-headless@${OBSIDIAN_HEADLESS_VERSION}
 
 # ---------------------------------------------------------------------------
 # Runtime deps: shadow provides usermod/groupmod for PUID/PGID support
