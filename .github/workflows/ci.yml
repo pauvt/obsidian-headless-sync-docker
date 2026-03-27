@@ -2,9 +2,9 @@ name: CI — Build & Security Scan
 
 on:
   push:
-    branches: [main]
+    branches: [main, nas]
   pull_request:
-    branches: [main]
+    branches: [main, nas]
 
 env:
   REGISTRY: ghcr.io
