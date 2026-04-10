@@ -44,18 +44,21 @@ jobs:
       - name: Compare versions and push tag if changed
         id: compare
         run: |
+          set -euo pipefail
           NPM_VER="${{ steps.npm.outputs.version }}"
           TAG_VER="${{ steps.tag.outputs.version }}"
-          if [[ "${NPM_VER}" == "${TAG_VER}" ]]; then
-            echo "Already up to date (${NPM_VER}). No build needed."
+          TARGET_TAG="v${NPM_VER}"
+
+          if git rev-parse -q --verify "refs/tags/${TARGET_TAG}" > /dev/null; then
+            echo "Tag ${TARGET_TAG} already exists. No build needed."
             echo "new_version=" >> "$GITHUB_OUTPUT"
-            BUILD_STATUS="✅ Already up to date — no build triggered"
+            BUILD_STATUS="✅ Tag already exists — no build triggered"
           else
-            echo "New version detected: ${NPM_VER} (was ${TAG_VER}) — creating tag v${NPM_VER}"
+            echo "New version detected: ${NPM_VER} (highest existing tag ${TAG_VER}) — creating tag ${TARGET_TAG}"
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git tag "v${NPM_VER}"
-            git push origin "v${NPM_VER}"
+            git tag "${TARGET_TAG}"
+            git push origin "${TARGET_TAG}"
             echo "new_version=${NPM_VER}" >> "$GITHUB_OUTPUT"
             BUILD_STATUS="🚀 New version detected — building \`v${NPM_VER}\`"
           fi
