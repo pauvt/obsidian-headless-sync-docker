@@ -20,6 +20,7 @@ services:
       SYNC_MODE: ${SYNC_MODE:-}
       SYNC_CONFIGS: ${SYNC_CONFIGS:-}
       UMASK: ${UMASK:-0077}
+      CONFIG_DIR_NAME: ${CONFIG_DIR_NAME:-}
     volumes:
       - ${VAULT_HOST_PATH:-./vault}:/vault
       - ${CONFIG_HOST_PATH:-./config}:/home/obsidian/.config
